@@ -15,7 +15,7 @@ mac:
 	@bin/main
 	@echo "Built a debug build for MacOS"
 win:
-	@zig cc -target x86_64-windows-gnu -I. -O3 -static lib/OpenAL32.lib main.c $(SRC) -o bin/main.exe -lopengl32 -lshell32 -luser32 -lgdi32 -lkernel32 -lpdh -lole32 -ldsound -lxaudio2_9
+	@zig cc -target x86_64-windows-gnu -I. -O3 main.c $(SRC) -o bin/main.exe -lole32 -ldsound -lopengl32 -lshell32 -luser32 -lgdi32 -lkernel32 -lpdh
 	@wine64 bin/main.exe
 	@echo "Built a debug build for Windows"
 release:
@@ -34,8 +34,7 @@ release:
 	@echo "Building the Windows x64 build"
 	@if [ -d "bin/publish/Win64" ]; then rm -r "bin/publish/Win64"; fi
 	@mkdir bin/publish/Win64
-	zig cc -target x86_64-windows-gnu -I. -O3 -static lib/libOpenAL32.a lib/OpenAL32.lib app_icon.o main.c $(SRC) -o bin/publish/Win64/Specters.exe -lopengl32 -lshell32 -luser32 -lgdi32 -lkernel32 -lpdh
+	@zig cc -target x86_64-windows-gnu -I. -O3 app_icon.o main.c $(SRC) -o bin/publish/Win64/main.exe -lole32 -ldsound -lopengl32 -lshell32 -luser32 -lgdi32 -lkernel32 -lpdh
 	@rm -f bin/publish/Win64/*.pdb
 	@cp -r assets.abp bin/publish/Win64
-	@cp -r lib/OpenAL32.dll bin/publish/Win64
 	@cp -r Icon.ico bin/publish/Win64

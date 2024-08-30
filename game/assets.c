@@ -81,35 +81,7 @@ RHN_TEXTURE GAME_GetRhineTexture(PAT_ASSETPACK* pack,const char* key){
 }
 
 MDMX_SOUND GAME_GetMDMXSound(PAT_ASSETPACK* pack, const char* key) {
-    PAT_SOUND* pat_sound = PAT_GetSoundByKey(pack, key);
-    if (!pat_sound) {
-        printf("ASSETS : CONVERT PAT SOUND TO MDMX_SOUND : Sound with key %s not found.\n", key);
-        MDMX_SOUND empty_sound = {0}; // Return an empty sound
-        return empty_sound;
-    }
-
-    MDMX_SOUND mdmx_sound;
-
-    // Initialize OpenAL
-    alGenBuffers(1, &mdmx_sound.buffer);
-    alGenSources(1, &mdmx_sound.source);
-
-    // Determine the format
-    ALenum format;
-    if (pat_sound->channels == 1) {
-        format = AL_FORMAT_MONO16;
-    } else if (pat_sound->channels == 2) {
-        format = AL_FORMAT_STEREO16;
-    } else {
-        printf("ASSETS : CONVERT PAT SOUND TO MDMX_SOUND : Unsupported channel count %d.\n", pat_sound->channels);
-        alDeleteSources(1, &mdmx_sound.source);
-        alDeleteBuffers(1, &mdmx_sound.buffer);
-        return mdmx_sound;
-    }
-
-    // Load audio data into the OpenAL buffer
-    alBufferData(mdmx_sound.buffer, format, pat_sound->data, (ALsizei)pat_sound->size, pat_sound->sampleRate);
-    alSourcei(mdmx_sound.source, AL_BUFFER, mdmx_sound.buffer);
-
+    PAT_SOUND* patSound = PAT_GetSoundByKey(pack,key);
+    MDMX_SOUND mdmx_sound = MDMX_SOUND_LoadFromBin(patSound->data,patSound->sampleRate,patSound->channels,patSound->size);
     return mdmx_sound;
 }

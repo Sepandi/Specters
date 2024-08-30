@@ -256,6 +256,9 @@ extern bool DW_KEYBOARD_KeyDownState[349];
 bool DW_IsKeyDown(KEY_CODE keycode);
 bool DW_IsKeyPressed(KEY_CODE keycode);
 
+#ifdef _WIN32
+    extern HWND DW_HWND;
+#endif
 
 #ifdef DARWIN_IMP
 #undef DARWIN_IMP
@@ -664,7 +667,10 @@ static CVReturn GlobalDisplayLinkCallback(CVDisplayLinkRef displayLink, const CV
     int winWidth,winHeight;
     POINT mousePos;
 
-    HWND hWnd;
+
+    #ifdef _WIN32
+        HWND DW_HWND;
+    #endif
     MSG msg;
     HDC hdc;
     bool running = true;
@@ -860,19 +866,6 @@ void DW_WINDOW_New(int width,int height,const char* title){
     #endif
     #ifdef _WIN32
 
-    #ifdef DEBUG
-    AllocConsole();
-    FILE* fp;
-    freopen_s(&fp, "CONOUT$", "w", stdout);
-    freopen_s(&fp, "CONOUT$", "w", stderr);
-    freopen_s(&fp, "CONIN$", "r", stdin);
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_SCREEN_BUFFER_INFO coninfo;
-    GetConsoleScreenBufferInfo(hConsole, &coninfo);
-    coninfo.dwSize.Y = 500;
-    SetConsoleScreenBufferSize(hConsole, coninfo.dwSize);
-    #endif
-
     WNDCLASS wc;
     memset(&wc, 0, sizeof(wc));
     wc.style = CS_OWNDC;
@@ -881,11 +874,11 @@ void DW_WINDOW_New(int width,int height,const char* title){
     wc.lpszClassName = "DarwinClass";
     RegisterClass(&wc);
 
-    hWnd = CreateWindow(
+    DW_HWND = CreateWindow(
         wc.lpszClassName, title, WS_OVERLAPPEDWINDOW | WS_VISIBLE,
         0, 0, width, height, NULL, NULL, GetModuleHandle(NULL), NULL);
 
-    hdc = GetDC(hWnd);
+    hdc = GetDC(DW_HWND);
 
     InitOpenGL(hdc);
     glEnable(GL_DEPTH_TEST);
@@ -930,12 +923,12 @@ void DW_SetIcon(const char* path) {
 
     if (hIconBig && hIconSmall) {
         // Set icon for the window (ICON_SMALL)
-        SendMessage(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hIconSmall);
+        SendMessage(DW_HWND, WM_SETICON, ICON_SMALL, (LPARAM)hIconSmall);
 
         // Set icon for the taskbar (ICON_BIG)
-        SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)hIconBig);
+        SendMessage(DW_HWND, WM_SETICON, ICON_BIG, (LPARAM)hIconBig);
     } else {
-        MessageBox(hWnd, "DW : SetIcon : Failed to load icon!", "Error", MB_ICONERROR);
+        MessageBox(DW_HWND, "DW : SetIcon : Failed to load icon!", "Error", MB_ICONERROR);
     }
     #endif
 }
@@ -947,19 +940,19 @@ void DW_SetFullscreen(bool fullscreen) {
     #ifdef _WIN32
     if (!fullscreen) {
         // Restore windowed mode
-        SetWindowLong(hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
-        SetWindowPos(hWnd, HWND_TOP, oldWindowRect.left, oldWindowRect.top,
+        SetWindowLong(DW_HWND, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+        SetWindowPos(DW_HWND, HWND_TOP, oldWindowRect.left, oldWindowRect.top,
                      oldWindowRect.right - oldWindowRect.left,
                      oldWindowRect.bottom - oldWindowRect.top,
                      SWP_SHOWWINDOW);
 
     } else if (fullscreen) {
         // Store current window position and size
-        GetWindowRect(hWnd, &oldWindowRect);
+        GetWindowRect(DW_HWND, &oldWindowRect);
 
         // Switch to fullscreen mode
-        SetWindowLong(hWnd, GWL_STYLE, WS_POPUP);
-        SetWindowPos(hWnd, HWND_TOP, 0, 0,
+        SetWindowLong(DW_HWND, GWL_STYLE, WS_POPUP);
+        SetWindowPos(DW_HWND, HWND_TOP, 0, 0,
                      GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),
                      SWP_SHOWWINDOW);
 
@@ -974,7 +967,7 @@ void DW_SetWindowTitle(const char* title){
     [window setTitle:[NSString stringWithUTF8String:title]];
     #endif
     #ifdef _WIN32
-    SetWindowText(hWnd, title);
+    SetWindowText(DW_HWND, title);
     #endif
 }
 
@@ -1178,14 +1171,14 @@ void DW_SetResizable(bool resizable) {
     #endif
 
     #ifdef _WIN32
-        LONG style = GetWindowLong(hWnd, GWL_STYLE);
+        LONG style = GetWindowLong(DW_HWND, GWL_STYLE);
         if (resizable) {
             style |= WS_THICKFRAME | WS_MAXIMIZEBOX;
         } else {
             style &= ~(WS_THICKFRAME | WS_MAXIMIZEBOX);
         }
-        SetWindowLong(hWnd, GWL_STYLE, style);
-        SetWindowPos(hWnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+        SetWindowLong(DW_HWND, GWL_STYLE, style);
+        SetWindowPos(DW_HWND, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
     #endif
 }
 
