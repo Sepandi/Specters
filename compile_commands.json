@@ -22,13 +22,15 @@
       "AudioToolbox",
       "-framework",
       "AVFoundation",
+      "-framework",
+      "GameController",
       "-o",
       "bin/main",
       "main.c"
     ],
-    "directory": "/Users/sepano/Developer/DarwinSoft",
-    "file": "/Users/sepano/Developer/DarwinSoft/main.c",
-    "output": "/Users/sepano/Developer/DarwinSoft/bin/main"
+    "directory": "/Users/sepano/Developer/Specters",
+    "file": "/Users/sepano/Developer/Specters/main.c",
+    "output": "/Users/sepano/Developer/Specters/bin/main"
   },
   {
     "arguments": [
@@ -53,13 +55,15 @@
       "AudioToolbox",
       "-framework",
       "AVFoundation",
+      "-framework",
+      "GameController",
       "-o",
       "bin/main",
       "game/assets.c"
     ],
-    "directory": "/Users/sepano/Developer/DarwinSoft",
-    "file": "/Users/sepano/Developer/DarwinSoft/game/assets.c",
-    "output": "/Users/sepano/Developer/DarwinSoft/bin/main"
+    "directory": "/Users/sepano/Developer/Specters",
+    "file": "/Users/sepano/Developer/Specters/game/assets.c",
+    "output": "/Users/sepano/Developer/Specters/bin/main"
   },
   {
     "arguments": [
@@ -84,13 +88,15 @@
       "AudioToolbox",
       "-framework",
       "AVFoundation",
+      "-framework",
+      "GameController",
       "-o",
       "bin/main",
       "game/button.c"
     ],
-    "directory": "/Users/sepano/Developer/DarwinSoft",
-    "file": "/Users/sepano/Developer/DarwinSoft/game/button.c",
-    "output": "/Users/sepano/Developer/DarwinSoft/bin/main"
+    "directory": "/Users/sepano/Developer/Specters",
+    "file": "/Users/sepano/Developer/Specters/game/button.c",
+    "output": "/Users/sepano/Developer/Specters/bin/main"
   },
   {
     "arguments": [
@@ -115,13 +121,15 @@
       "AudioToolbox",
       "-framework",
       "AVFoundation",
+      "-framework",
+      "GameController",
       "-o",
       "bin/main",
       "game/house.c"
     ],
-    "directory": "/Users/sepano/Developer/DarwinSoft",
-    "file": "/Users/sepano/Developer/DarwinSoft/game/house.c",
-    "output": "/Users/sepano/Developer/DarwinSoft/bin/main"
+    "directory": "/Users/sepano/Developer/Specters",
+    "file": "/Users/sepano/Developer/Specters/game/house.c",
+    "output": "/Users/sepano/Developer/Specters/bin/main"
   },
   {
     "arguments": [
@@ -146,13 +154,15 @@
       "AudioToolbox",
       "-framework",
       "AVFoundation",
+      "-framework",
+      "GameController",
       "-o",
       "bin/main",
       "game/player.c"
     ],
-    "directory": "/Users/sepano/Developer/DarwinSoft",
-    "file": "/Users/sepano/Developer/DarwinSoft/game/player.c",
-    "output": "/Users/sepano/Developer/DarwinSoft/bin/main"
+    "directory": "/Users/sepano/Developer/Specters",
+    "file": "/Users/sepano/Developer/Specters/game/player.c",
+    "output": "/Users/sepano/Developer/Specters/bin/main"
   },
   {
     "arguments": [
@@ -177,13 +187,15 @@
       "AudioToolbox",
       "-framework",
       "AVFoundation",
+      "-framework",
+      "GameController",
       "-o",
       "bin/main",
       "game/random.c"
     ],
-    "directory": "/Users/sepano/Developer/DarwinSoft",
-    "file": "/Users/sepano/Developer/DarwinSoft/game/random.c",
-    "output": "/Users/sepano/Developer/DarwinSoft/bin/main"
+    "directory": "/Users/sepano/Developer/Specters",
+    "file": "/Users/sepano/Developer/Specters/game/random.c",
+    "output": "/Users/sepano/Developer/Specters/bin/main"
   },
   {
     "arguments": [
@@ -208,13 +220,15 @@
       "AudioToolbox",
       "-framework",
       "AVFoundation",
+      "-framework",
+      "GameController",
       "-o",
       "bin/main",
       "game/save.c"
     ],
-    "directory": "/Users/sepano/Developer/DarwinSoft",
-    "file": "/Users/sepano/Developer/DarwinSoft/game/save.c",
-    "output": "/Users/sepano/Developer/DarwinSoft/bin/main"
+    "directory": "/Users/sepano/Developer/Specters",
+    "file": "/Users/sepano/Developer/Specters/game/save.c",
+    "output": "/Users/sepano/Developer/Specters/bin/main"
   },
   {
     "arguments": [
@@ -239,12 +253,14 @@
       "AudioToolbox",
       "-framework",
       "AVFoundation",
+      "-framework",
+      "GameController",
       "-o",
       "bin/main",
       "game/tutorial.c"
     ],
-    "directory": "/Users/sepano/Developer/DarwinSoft",
-    "file": "/Users/sepano/Developer/DarwinSoft/game/tutorial.c",
-    "output": "/Users/sepano/Developer/DarwinSoft/bin/main"
+    "directory": "/Users/sepano/Developer/Specters",
+    "file": "/Users/sepano/Developer/Specters/game/tutorial.c",
+    "output": "/Users/sepano/Developer/Specters/bin/main"
   }
 ]

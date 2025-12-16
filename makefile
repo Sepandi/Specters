@@ -11,7 +11,7 @@ assets:
 	@echo "Assets Updated"
 
 mac:
-	@clang -g -O0 -DDEBUG -ObjC -std=c17 -I. lib/libopenal.a main.c $(SRC) -framework Cocoa -framework Quartz -framework OpenGL -framework CoreAudio -framework AudioToolbox -framework AVFoundation -lc++ -o bin/main
+	@clang -g -O0 -DDEBUG -ObjC -std=c17 -I. lib/libopenal.a main.c $(SRC) -framework Cocoa -framework Quartz -framework OpenGL -framework CoreAudio -framework AudioToolbox -framework AVFoundation -framework GameController -lc++ -o bin/main
 	@bin/main
 	@echo "Built a debug build for MacOS"
 win:
@@ -28,7 +28,7 @@ release:
 	@echo '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n\t<key>CFBundleDevelopmentRegion</key>\n\t<string>en</string>\n\t<key>CFBundleExecutable</key>\n\t<string>Specters</string>\n\t<key>CFBundleIconFile</key>\n\t<string>Icon</string>\n\t<key>CFBundleIdentifier</key>\n\t<string>net.Sepano.Specters</string>\n\t<key>CFBundleInfoDictionaryVersion</key>\n\t<string>6.0</string>\n\t<key>CFBundleName</key>\n\t<string>Specters</string>\n\t<key>CFBundlePackageType</key>\n\t<string>APPL</string>\n\t<key>CFBundleShortVersionString</key>\n\t<string>1.0</string>\n\t<key>CFBundleSignature</key>\n\t<string>Specters</string>\n\t<key>CFBundleVersion</key>\n\t<string>Release</string>\n\t<key>LSApplicationCategoryType</key>\n\t<string>public.app-category.games</string>\n\t<key>LSMinimumSystemVersion</key>\n\t<string>11</string>\n\t<key>NSHumanReadableCopyright</key>\n\t<string>Copyright © 2024-2025 Sepano Darbandi</string>\n\t<key>NSPrincipalClass</key>\n\t<string>NSApplication</string>\n\t<key>NSHighResolutionCapable</key>\n\t<string>True</string>\n</dict>\n</plist>' > bin/publish/Specters.app/Contents/Info.plist
 	@cp -r assets.abp bin/publish/Specters.app/Contents/Resources
 	@cp -r Icon.icns bin/publish/Specters.app/Contents/Resources
-	@clang -ObjC -std=c17 -I.  lib/libopenal.a main.c $(SRC) -framework Cocoa -framework Quartz -framework OpenGL -framework CoreAudio -framework AudioToolbox -framework AVFoundation -lc++ -arch x86_64 -arch arm64 -O3 -o bin/publish/Specters.app/Contents/MacOS/Specters
+	@clang -ObjC -std=c17 -I.  lib/libopenal.a main.c $(SRC) -framework Cocoa -framework Quartz -framework OpenGL -framework CoreAudio -framework AudioToolbox -framework AVFoundation -framework GameController -lc++ -arch x86_64 -arch arm64 -O3 -o bin/publish/Specters.app/Contents/MacOS/Specters
 	@echo "published for MacOS-Universal2 in bin/publish/Rhine.app"
 
 	@echo "Building the Windows x64 build"

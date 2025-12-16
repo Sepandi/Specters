@@ -55,16 +55,16 @@ void PLAYER_Update(HOUSE house){
 
 
     // SHOOTING
-    if (DW_IsMouseKeyDown(MOUSE_KEY_LEFT)){
+    if (DW_IsMouseKeyDown(MOUSE_KEY_LEFT) || DW_IsControllerButtonDown(BUTTON_RT)){
         PLAYER.isShooting = true;
     }
 
-    if (DW_IsMouseKeyPressed(MOUSE_KEY_LEFT) && PLAYER.connectedToGhost){
+    if ((DW_IsMouseKeyPressed(MOUSE_KEY_LEFT)|| DW_IsControllerButtonPressed(BUTTON_RT)) && PLAYER.connectedToGhost){
         PLAYER.connectedToGhost = false;
         PLAYER.isShooting = false;
     }
 
-    if (DW_IsKeyPressed(KEY_F)){
+    if (DW_IsKeyPressed(KEY_F) ||DW_IsControllerButtonPressed(BUTTON_X)){
         PLAYER.detectorIsBeingUsed = !PLAYER.detectorIsBeingUsed;
     }
     
@@ -74,17 +74,25 @@ void PLAYER_Update(HOUSE house){
         float moveX = 0;
         float moveY = 0;
 
-        if ((DW_IsKeyDown(KEY_W) || DW_IsKeyDown(KEY_ARROW_UP)) && PLAYER.canMove[UP]){
-            PLAYER.pos.y -= PLAYER.velocity * DW_GetDeltaTime();
+        if ((DW_IsKeyDown(KEY_W) || DW_IsKeyDown(KEY_ARROW_UP) || DW_GetControllerLeftStickY() > 0) && PLAYER.canMove[UP]){
+            float controllerMove = 1;
+            if (DW_GetControllerLeftStickY() > 0) controllerMove = fabs(DW_GetControllerLeftStickY());
+            PLAYER.pos.y -= PLAYER.velocity * DW_GetDeltaTime() * controllerMove;
         }
-        if ((DW_IsKeyDown(KEY_S)|| DW_IsKeyDown(KEY_ARROW_DOWN)) && PLAYER.canMove[DOWN]){
-            PLAYER.pos.y += PLAYER.velocity * DW_GetDeltaTime();
+        if ((DW_IsKeyDown(KEY_S)|| DW_IsKeyDown(KEY_ARROW_DOWN) || DW_GetControllerLeftStickY() < 0) && PLAYER.canMove[DOWN]){
+            float controllerMove = 1;
+            if (DW_GetControllerLeftStickY() < 0) controllerMove = fabs(DW_GetControllerLeftStickY());
+            PLAYER.pos.y += PLAYER.velocity * DW_GetDeltaTime()  * controllerMove;
         }
-        if ((DW_IsKeyDown(KEY_A)|| DW_IsKeyDown(KEY_ARROW_LEFT)) && PLAYER.canMove[LEFT]){
-            PLAYER.pos.x -= PLAYER.velocity * DW_GetDeltaTime();
+        if ((DW_IsKeyDown(KEY_A)|| DW_IsKeyDown(KEY_ARROW_LEFT)|| DW_GetControllerLeftStickX() < 0) && PLAYER.canMove[LEFT]){
+            float controllerMove = 1;
+            if (DW_GetControllerLeftStickX() < 0) controllerMove = fabs(DW_GetControllerLeftStickX());
+            PLAYER.pos.x -= PLAYER.velocity * DW_GetDeltaTime() * controllerMove;
         }
-        if ((DW_IsKeyDown(KEY_D)|| DW_IsKeyDown(KEY_ARROW_RIGHT)) && PLAYER.canMove[RIGHT]){
-            PLAYER.pos.x += PLAYER.velocity * DW_GetDeltaTime();
+        if ((DW_IsKeyDown(KEY_D)|| DW_IsKeyDown(KEY_ARROW_RIGHT)|| DW_GetControllerLeftStickX() > 0) && PLAYER.canMove[RIGHT]){
+            float controllerMove = 1;
+            if (DW_GetControllerLeftStickX() > 0) controllerMove = fabs(DW_GetControllerLeftStickX());
+            PLAYER.pos.x += PLAYER.velocity * DW_GetDeltaTime() * controllerMove;
         }
     //}
 

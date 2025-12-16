@@ -246,7 +246,7 @@ void HOUSE_GHOST_Update(HOUSE *house) {
         NT_RECT ghostAABB = {house->ghosts[i].pos.x, house->ghosts[i].pos.y, (float)house->tileSize/2, (float)house->tileSize/2};
         if (NT_RECT_IsCollidingWithLine(ghostAABB, PLAYER.gunHeadPos,PLAYER.protonGunEnd) && PLAYER.isShooting) {
             house->ghosts[i].immune+= DW_GetDeltaTime();
-            if (DW_IsKeyPressed(KEY_SPACE)){
+            if (DW_IsKeyPressed(KEY_SPACE) || DW_IsControllerButtonPressed(BUTTON_A)){
                 PLAYER.pullingForce+=0.1;
             }
             if (PLAYER.pullingForce > 1.5) PLAYER.pullingForce = 1.5;

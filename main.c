@@ -21,6 +21,7 @@
 #include "game/tutorial.h"
 #include <string.h>
 
+#include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
 typedef enum{
@@ -52,6 +53,7 @@ bool TypeIsFinished(const char* text,float timerObj){
     return timerObj >= strlen(text);
 }
 
+
 int CMAIN(){
     MDMX_Init();
     ASSETS_LOAD();
@@ -60,7 +62,6 @@ int CMAIN(){
     
     RHN_CANVAS_New(256*1.5, 144*1.5);
     DW_SetFullscreen(true);
-
     
     SAVE_LoadSave();
 
@@ -130,9 +131,9 @@ int CMAIN(){
                 break;
             case MAIN_MENU:
                 // START MAIN_MENU RENDER
-                if (!menuOpen && (DW_IsKeyPressed(KEY_RETURN) || DW_IsMouseKeyPressed(MOUSE_KEY_LEFT))){
+                if (!menuOpen && (DW_IsKeyPressed(KEY_RETURN) || DW_IsMouseKeyPressed(MOUSE_KEY_LEFT) ||DW_IsControllerButtonPressed(BUTTON_START))){
                     menuOpen = true;
-                }else if (menuOpen && DW_IsKeyPressed(KEY_ESCAPE)){
+                }else if (menuOpen && DW_IsKeyPressed(KEY_ESCAPE) ||DW_IsControllerButtonPressed(BUTTON_B)){
                     menuOpen = false;
                 }
                 // END MAIN_MENU UPDATE
@@ -168,7 +169,12 @@ int CMAIN(){
                     tick+=DW_GetDeltaTime();
 
                     if (PLAYER.canRotate){
-                        PLAYER.rotation = atan2(mousePos.y - ((float)RHN_GetCanvasHeight() / 2), (mousePos.x - ((float)RHN_GetCanvasWidth() / 2)));
+                        if ((DW_GetControllerRightStickX() > 0 || DW_GetControllerRightStickX() < 0) && (DW_GetControllerRightStickY() > 0 || DW_GetControllerRightStickY() < 0)){
+                            PLAYER.rotation = atan2(0-DW_GetControllerRightStickY(),DW_GetControllerRightStickX()-0);
+                        }else{
+                            PLAYER.rotation = atan2(mousePos.y - ((float)RHN_GetCanvasHeight() / 2), (mousePos.x - ((float)RHN_GetCanvasWidth() / 2)));
+                        }
+                        
                     }else{
                         PLAYER.rotation = atan2(PLAYER.protonGunEnd.y - PLAYER.pos.y, (PLAYER.protonGunEnd.x - PLAYER.pos.x));
                     }
@@ -179,7 +185,7 @@ int CMAIN(){
 
                     HOUSE_GHOST_Update(&h);
 
-                    if (DW_IsKeyPressed(KEY_ESCAPE) || PLAYER.catchedGhosts > GHOST_COUNT-1){
+                    if ((DW_IsKeyPressed(KEY_ESCAPE)||DW_IsControllerButtonPressed(BUTTON_START))|| PLAYER.catchedGhosts > GHOST_COUNT-1){
                         wantToQuitPrompt = true;
                     }
                 }
@@ -237,7 +243,7 @@ int CMAIN(){
                     cameraPos.y = -PLAYER.pos.y+((float)RHN_GetCanvasHeight()/2)-((float)TEXTURE_PLAYER.height/2);
 
                     HOUSE_GHOST_Update(&h);
-                    if (DW_IsKeyPressed(KEY_ESCAPE)){
+                    if (DW_IsKeyPressed(KEY_ESCAPE)||DW_IsControllerButtonPressed(BUTTON_START)){
                         wantToQuitPrompt = true;
                     }
                 }
@@ -371,14 +377,14 @@ int CMAIN(){
                         RHN_DrawRect((RHN_GetCanvasWidth()/2)-75,(RHN_GetCanvasHeight()/2)-50,150,100,RHN_COLOR_OLIVE);
                         RHN_DrawHollowRect( (RHN_GetCanvasWidth()/2)-75,(RHN_GetCanvasHeight()/2)-50,150,100,RHN_COLOR_WHITE,1);
                         RHN_DrawText(font,abortText,(RHN_GetCanvasWidth()/2)-((strlen(abortText)/2)*9),(RHN_GetCanvasHeight()/2)-40,1,RHN_COLOR_WHITE);
-                        if (UI_Button(font,yesText,(RHN_GetCanvasWidth()/2)-75+30,(RHN_GetCanvasHeight()/2),1,mousePos,false)){
+                        if (UI_Button(font,yesText,(RHN_GetCanvasWidth()/2)-75+30,(RHN_GetCanvasHeight()/2),1,mousePos,false)|| DW_IsControllerButtonPressed(BUTTON_A)){
                             currentScreen = MAIN_MENU;
                             wantToQuitPrompt = false;
                             MDMX_SOUND_Stop(&SOUND_GAM_IDLE);
                             MDMX_SOUND_Stop(&SOUND_GAM_CLOSE);
                             MDMX_SOUND_Stop(&SOUND_SHOOT);
                         }
-                        if (UI_Button(font,noText,(RHN_GetCanvasWidth()/2)+75-(strlen(noText)*9)-30,(RHN_GetCanvasHeight()/2),1,mousePos,false)){
+                        if (UI_Button(font,noText,(RHN_GetCanvasWidth()/2)+75-(strlen(noText)*9)-30,(RHN_GetCanvasHeight()/2),1,mousePos,false)|| DW_IsControllerButtonPressed(BUTTON_B)){
                             wantToQuitPrompt = false;
                         }
                     }else{
@@ -387,7 +393,7 @@ int CMAIN(){
                         RHN_DrawRect((RHN_GetCanvasWidth()/2)-125,(RHN_GetCanvasHeight()/2)-100,250,150,RHN_COLOR_OLIVE);
                         RHN_DrawHollowRect( (RHN_GetCanvasWidth()/2)-125,(RHN_GetCanvasHeight()/2)-100,250,150,RHN_COLOR_WHITE,1);
                         RHN_DrawText(font,endText,(RHN_GetCanvasWidth()/2)-((strlen(endText)/2)*9),(RHN_GetCanvasHeight()/2)-60,1,RHN_COLOR_WHITE);
-                        if (UI_Button(font,endButtonText,(RHN_GetCanvasWidth()/2)-((strlen(endButtonText)/2)*9),(RHN_GetCanvasHeight()/2),1,mousePos,false)){
+                        if (UI_Button(font,endButtonText,(RHN_GetCanvasWidth()/2)-((strlen(endButtonText)/2)*9),(RHN_GetCanvasHeight()/2),1,mousePos,false)|| DW_IsControllerButtonPressed(BUTTON_A)){
                             currentScreen = MAIN_MENU;
                             wantToQuitPrompt = false;
                             MDMX_SOUND_Stop(&SOUND_GAM_IDLE);
@@ -504,7 +510,7 @@ int CMAIN(){
                     RHN_DrawRect(0,0,RHN_GetCanvasWidth(),9*(lineCount+2),RHN_COLOR_BLACK);
                     RHN_DrawText(font,line1,0,0,1,RHN_COLOR_RED);
                     RHN_DrawText(font,pressContinue,RHN_GetCanvasWidth()-(strlen(pressContinue)*9),(9*(lineCount+2))-9,1,RHN_COLOR_RED);
-                    if (DW_IsKeyPressed(KEY_RETURN)){
+                    if (DW_IsKeyPressed(KEY_RETURN)||DW_IsControllerButtonPressed(BUTTON_A)){
                         tutorialStep = 1;
                     }
                 }else if (tutorialStep == 1){
@@ -578,7 +584,7 @@ int CMAIN(){
                     RHN_DrawText(font,line1,0,0,1,RHN_COLOR_RED);
                     RHN_DrawText(font,line2,0,9,1,RHN_COLOR_RED);
                     RHN_DrawText(font,pressContinue,RHN_GetCanvasWidth()-(strlen(pressContinue)*9),(9*(lineCount+2))-9,1,RHN_COLOR_RED);
-                    if (DW_IsKeyPressed(KEY_RETURN)){
+                    if (DW_IsKeyPressed(KEY_RETURN)||DW_IsControllerButtonPressed(BUTTON_A)){
                         currentScreen = MAIN_MENU;
                         tutorialStep = 0;
                         PLAYER.catchedGhosts = 0;
@@ -593,7 +599,7 @@ int CMAIN(){
                     RHN_DrawRect((RHN_GetCanvasWidth()/2)-75,(RHN_GetCanvasHeight()/2)-50,150,100,RHN_COLOR_OLIVE);
                     RHN_DrawHollowRect( (RHN_GetCanvasWidth()/2)-75,(RHN_GetCanvasHeight()/2)-50,150,100,RHN_COLOR_WHITE,1);
                     RHN_DrawText(font,abortText,(RHN_GetCanvasWidth()/2)-((strlen(abortText)/2)*9),(RHN_GetCanvasHeight()/2)-40,1,RHN_COLOR_WHITE);
-                    if (UI_Button(font,yesText,(RHN_GetCanvasWidth()/2)-75+30,(RHN_GetCanvasHeight()/2),1,mousePos,true)){
+                    if (UI_Button(font,yesText,(RHN_GetCanvasWidth()/2)-75+30,(RHN_GetCanvasHeight()/2),1,mousePos,true) || DW_IsControllerButtonPressed(BUTTON_A)){
                         currentScreen = MAIN_MENU;
                         wantToQuitPrompt = false;
                         MDMX_SOUND_Stop(&SOUND_GAM_IDLE);
@@ -604,7 +610,7 @@ int CMAIN(){
                         PLAYER.catchedGhosts = 0;
                         PLAYER.detectorIsBeingUsed = false;
                     }
-                    if (UI_Button(font,noText,(RHN_GetCanvasWidth()/2)+75-(strlen(noText)*9)-30,(RHN_GetCanvasHeight()/2),1,mousePos,true)){
+                    if (UI_Button(font,noText,(RHN_GetCanvasWidth()/2)+75-(strlen(noText)*9)-30,(RHN_GetCanvasHeight()/2),1,mousePos,true) || DW_IsControllerButtonPressed(BUTTON_B)){
                         wantToQuitPrompt = false;
                     }
                 }

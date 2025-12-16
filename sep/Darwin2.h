@@ -1,14 +1,9 @@
 #pragma once
 
-// DO #define DARWIN_IMP in one of your c file (preferebly main.c)
-
 #include <stdbool.h>
 #include <sys/stat.h> 
 #include <sys/types.h>
 #include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
 
 #ifdef __APPLE__
     #define GL_SILENCE_DEPRECATION
@@ -293,6 +288,7 @@ float DW_GetControllerLeftStickY();
 float DW_GetControllerRightStickX();
 float DW_GetControllerRightStickY();
 
+
 #ifdef DARWIN_IMP
 #undef DARWIN_IMP
 #include <stdio.h>
@@ -333,7 +329,7 @@ char* stringf(const char* format, ...) {
 
 #ifdef __APPLE__ // FOR MAC OS
 
-#include <Cocoa/Cocoa.h>
+#import <Cocoa/Cocoa.h>
 #import <QuartzCore/CVDisplayLink.h>
 #import <OpenGL/OpenGL.h>
 #import <GameController/GameController.h>
@@ -349,7 +345,6 @@ NSPoint mousePos;
 NSAutoreleasePool * pool;
 uint64_t lastTime;
 mach_timebase_info_data_t timebaseInfo;
-CGFloat scale;
 
 
 void ToggleFullscreen(NSWindow *window) {
@@ -368,6 +363,7 @@ static CVReturn GlobalDisplayLinkCallback(CVDisplayLinkRef, const CVTimeStamp*, 
 
 @interface View : NSOpenGLView <NSWindowDelegate> {
 @public
+	CVDisplayLinkRef displayLink;
 	bool running;
 	NSRect windowRect;
 	NSRecursiveLock* appLock;
@@ -454,27 +450,53 @@ View* view;
     ToggleFullscreen(window);
 }
 
-
-- (void)prepareOpenGL {
-    [super prepareOpenGL];
-
-    [[self openGLContext] makeCurrentContext];
-
-    GLint swapInt = 0;
-    [[self openGLContext] setValues:&swapInt
-                       forParameter:NSOpenGLContextParameterSwapInterval];
-
-    glClearColor(0.5f, 0.6f, 0.7f, 1.0f);
-    glEnable(GL_DEPTH_TEST);
+- (void) prepareOpenGL {
+	[super prepareOpenGL];
+		
+	[[self window] setLevel: NSNormalWindowLevel];
+	[[self window] makeKeyAndOrderFront: self];
+	
+	// Make all the OpenGL calls to setup rendering and build the necessary rendering objects
+	[[self openGLContext] makeCurrentContext];
+	// Synchronize buffer swaps with vertical refresh rate
+	GLint swapInt = 0; // Vsync off!
+	[[self openGLContext] setValues:&swapInt forParameter:NSOpenGLContextParameterSwapInterval];
+	
+	// Create a display link capable of being used with all active displays
+	CVDisplayLinkCreateWithActiveCGDisplays(&displayLink);
+	
+	// Set the renderer output callback function
+	CVDisplayLinkSetOutputCallback(displayLink, &GlobalDisplayLinkCallback, self);
+	
+	CGLContextObj cglContext = (CGLContextObj)[[self openGLContext] CGLContextObj];
+	CGLPixelFormatObj cglPixelFormat = (CGLPixelFormatObj)[[self pixelFormat] CGLPixelFormatObj];
+	CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(displayLink, cglContext, cglPixelFormat);
+	
+	GLint dim[2] = {(GLint)windowRect.size.width, (GLint)windowRect.size.height};
+	CGLSetParameter(cglContext, kCGLCPSurfaceBackingSize, dim);
+	CGLEnable(cglContext, kCGLCESurfaceBackingSize);
+	
+	[appLock lock];
+	CGLLockContext((CGLContextObj)[[self openGLContext] CGLContextObj]);
+	// Temp
+	glClearColor(0.5f, 0.6f, 0.7f, 1.0f);
+	glViewport(0, 0, windowRect.size.width, windowRect.size.height);
+	glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
-    glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
     glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_TEXTURE_2D);
+	// End temp
+	CGLUnlockContext((CGLContextObj)[[self openGLContext] CGLContextObj]); 
+	[appLock unlock];
+
+	// Activate the display link
+	CVDisplayLinkStart(displayLink);
 
     NSRect bounds = [self bounds];
-    scale = [[self window] backingScaleFactor];
-    glViewport(0, 0, bounds.size.width * scale, bounds.size.height * scale);
+    [[self openGLContext] makeCurrentContext];
+    glViewport(0, 0, NSWidth(bounds), NSHeight(bounds));
 }
 
 // Tell the window to accept input events
@@ -520,7 +542,7 @@ View* view;
     [[self openGLContext] makeCurrentContext];
     CGLLockContext((CGLContextObj)[[self openGLContext] CGLContextObj]);
     
-    glViewport(0, 0, newSize.width * scale, newSize.height * scale);
+    glViewport(0, 0, newSize.width, newSize.height);
     
     CGLUnlockContext((CGLContextObj)[[self openGLContext] CGLContextObj]);
     [appLock unlock];
@@ -541,7 +563,7 @@ View* view;
     //NSLog(@"Window resize: %lf, %lf", windowSize.width, windowSize.height);
     
     // Update the OpenGL viewport
-    glViewport(0, 0, newSize.width * scale, newSize.height * scale);
+    glViewport(0, 0, newSize.width, newSize.height);
     
     CGLUnlockContext((CGLContextObj)[[self openGLContext] CGLContextObj]);
     [appLock unlock];
@@ -552,10 +574,22 @@ View* view;
     [super reshape];
 
     // Update the OpenGL viewport to the new size
-    glViewport(0, 0, windowSize.width * scale, windowSize.height * scale);
+    glViewport(0, 0, windowSize.width, windowSize.height);
 
 }
 
+
+- (void)resumeDisplayRenderer  {
+	[appLock lock];
+	CVDisplayLinkStop(displayLink);
+	[appLock unlock]; 
+}
+
+- (void)haltDisplayRenderer  {
+	[appLock lock];
+	CVDisplayLinkStop(displayLink);
+	[appLock unlock];
+}
 
 // Terminate window when the red X is pressed
 -(void)windowWillClose:(NSNotification *)notification {
@@ -563,10 +597,14 @@ View* view;
 }
 
 // Cleanup
-- (void) dealloc {
-    [appLock release];
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+- (void) dealloc {   
+	[appLock release];
+    if (displayLink) {
+        CVDisplayLinkRelease(displayLink);
+        displayLink = NULL;
+    }
     [super dealloc];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 // MOUSE
@@ -633,12 +671,25 @@ View* view;
     // Continue tracking the mouse while button is held down
 }
 
-
+- (void)setupDisplayLink {
+    CVDisplayLinkCreateWithActiveCGDisplays(&displayLink);
+    CVDisplayLinkSetOutputCallback(displayLink, &GlobalDisplayLinkCallback, self);
+    
+    // Add the display link to the appropriate run loop
+    CVDisplayLinkStart(displayLink);
+}
 
 
 
 @end
 
+
+
+static CVReturn GlobalDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* displayLinkContext) {
+    CVReturn result = [(View*)displayLinkContext getFrameForTime:outputTime];
+
+    return result;
+}
 
 
 
@@ -1129,19 +1180,12 @@ void DW_SetWindowTitle(const char* title){
 bool DW_IsRunning() {
     #ifdef __APPLE__
     // Ensure OpenGL context is current
-    NSEvent *event = nil;
-
-    // Ensure OpenGL context is current
     [[view openGLContext] makeCurrentContext];
 
 
     // Render a frame (assumes view is an NSOpenGLView)
-    while ((event = [NSApp nextEventMatchingMask:NSEventMaskAny
-                                    untilDate:nil
-                                        inMode:NSDefaultRunLoopMode
-                                        dequeue:YES])) {
-        [NSApp sendEvent:event];
-    }
+    CVTimeStamp outputTime;
+    [view getFrameForTime:&outputTime];
 
     // Flush OpenGL buffer to display
     [[view openGLContext] flushBuffer];
@@ -1150,6 +1194,7 @@ bool DW_IsRunning() {
 
     // Process events until none are left in the queue
     
+    NSEvent *event;
     while ((event = [NSApp nextEventMatchingMask:NSEventMaskAny untilDate:nil inMode:NSDefaultRunLoopMode dequeue:YES])) {
         [NSApp sendEvent:event];
     }
@@ -1190,7 +1235,7 @@ bool DW_IsRunning() {
         frameCount = 0;
     }
         
-    
+
     
     // Return running state
     return view->running;
@@ -1226,7 +1271,7 @@ bool DW_IsRunning() {
         } else {
             SwapBuffers(hdc);
         }
-        glViewport(0, 0, DW_GetWindowWidth() * scale, DW_GetWindowHeight() * scale);
+
         // Controller
         //ProcessControllerInput();
         return running;
@@ -1236,11 +1281,17 @@ bool DW_IsRunning() {
 
 
 void DW_CleanUp(){
-#ifdef __APPLE__
-    view->running = false;
-    [NSApp terminate:nil];
-    [pool drain];
-#endif
+    #ifdef __APPLE__
+    [view->appLock lock];
+
+    CVDisplayLinkStop(view->displayLink);
+    CVDisplayLinkRelease(view->displayLink);
+
+    [view->appLock unlock];
+    [NSApp terminxate:view];
+    [NSApp run]; 
+	[pool drain]; 
+    #endif
 }
 
 int DW_GetWindowWidth(){
